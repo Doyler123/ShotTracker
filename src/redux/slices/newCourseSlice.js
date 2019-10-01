@@ -26,7 +26,13 @@ const newCourseSlice = createSlice({
         },
         addHoleInfo(state, action){
             const { name, data } = action.payload
-            state.courseData.holes[state.currentHole][name] = data
+            if(state.courseData.holes[state.currentHole]){
+                state.courseData.holes[state.currentHole][name] = data
+            }else{
+                state.courseData.holes[state.currentHole] = {
+                    [name] : data
+                }
+            }
         },
         setCurrentHole(state, action){
             const { currentHole } = action.payload

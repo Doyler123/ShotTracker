@@ -20,7 +20,7 @@ export default function MapHoles(props) {
 
   const { currentHole } = useSelector(state => state.newCourse)
   const { courseLocation } = useSelector(state => state.newCourse.courseData)
-  const { holeData } = useSelector(state  => state.newCourse.courseData[currentHole]) || {}
+  const { holes } = useSelector(state  => state.newCourse.courseData ) || {}
 
   useEffect(()=>{
     getLocation().then(
@@ -43,14 +43,16 @@ export default function MapHoles(props) {
   }, [])
 
   const getCoordsFromName = (loc) => {
+      var region = {
+        latitude: loc.lat,
+        longitude: loc.lng,
+        latitudeDelta: 0.003,
+        longitudeDelta: 0.003
+      }
       dispatch(setCourseLocation({  
-        location : {
-          latitude: loc.lat,
-          longitude: loc.lng,
-          latitudeDelta: 0.003,
-          longitudeDelta: 0.003
-        }
+        location : region
       }))
+      map.animateToRegion(region, 0)
   }
   
   const setMarker = (markerName, data) => {
@@ -76,7 +78,7 @@ export default function MapHoles(props) {
   // const [fabOpen, setFabOpen] = useState(false)
   
   const isMarkerVisable = (markerName) => {
-    return holeData && holeData[markerName]
+    return currentHole !== 0 && holes[currentHole] && holes[currentHole][markerName]
   }
   
   // const onClickButton = (markerVisable) => {
@@ -87,15 +89,19 @@ export default function MapHoles(props) {
   // }
   
   const onPressMap = (coordinate) => {
-    if(holeData){
-      if(!holeData[Constants.TEE_MARKER]){
-        setMarker[Constants.TEE_MARKER, coordinate]
-      }
-      else if(!holeData[Constants.FAIRWAY_MARKER]){
-        setMarker[Constants.FAIRWAY_MARKER, coordinate]
-      }
-      else if(!holeData[Constants.GREEN_MARKER]){
-        setMarker[Constants.GREEN_MARKER, coordinate]
+    if(currentHole !== 0){
+      if(holes[currentHole]){
+        if(!holes[currentHole][Constants.TEE_MARKER]){
+          setMarker(Constants.TEE_MARKER, coordinate)
+        }
+        else if(!holes[currentHole][Constants.FAIRWAY_MARKER]){
+          setMarker(Constants.FAIRWAY_MARKER, coordinate)
+        }
+        else if(!holes[currentHole][Constants.GREEN_MARKER]){
+          setMarker(Constants.GREEN_MARKER, coordinate)
+        }
+      }else{
+        setMarker(Constants.TEE_MARKER, coordinate)
       }
     }
   }
@@ -131,24 +137,24 @@ export default function MapHoles(props) {
             // longitude: -6.414048224687576,
             // latitudeDelta: 0.1922,
             // longitudeDelta: 0.0421}}
-            region={courseLocation}
+            initialRegion={courseLocation}
             showsUserLocation={true}
             mapType={"satellite"}
             onPress={ (event) => {onPressMap(event.nativeEvent.coordinate)} }
           >
             {isMarkerVisable(Constants.TEE_MARKER) ? 
               <Marker draggable
-                coordinate={holeData[Constants.TEE_MARKER]}
+                coordinate={holes[currentHole][Constants.TEE_MARKER]}
                 onDragEnd={(e) => setMarker(Constants.TEE_MARKER, e.nativeEvent.coordinate)}
               /> : null}
             {isMarkerVisable(Constants.FAIRWAY_MARKER) ? 
               <Marker draggable
-                coordinate={holeData[Constants.FAIRWAY_MARKER]}
+                coordinate={holes[currentHole][Constants.FAIRWAY_MARKER]}
                 onDragEnd={(e) => setMarker(Constants.FAIRWAY_MARKER, e.nativeEvent.coordinate)}
               /> : null}
             {isMarkerVisable(Constants.GREEN_MARKER) ? 
               <Marker draggable
-                coordinate={holeData[Constants.GREEN_MARKER]}
+                coordinate={holes[currentHole][Constants.GREEN_MARKER]}
                 onDragEnd={(e) => setMarker(Constants.GREEN_MARKER, e.nativeEvent.coordinate)}
               /> : null}
 
@@ -169,7 +175,7 @@ export default function MapHoles(props) {
             />   */}
 
           </MapView>
-          {currentHole == 0 ? <MapInput notifyChange={(loc) => getCoordsFromName(loc)}/> : null}
+          {currentHole === 0 ? <MapInput notifyChange={(loc) => getCoordsFromName(loc)}/> : null}
           {/* <Fab
             active={fabOpen}
             direction="down"
