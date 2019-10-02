@@ -6,6 +6,7 @@ import { Provider } from 'react-redux'
 import store from './src/redux/store/store'
 import Courses from './src/components/course/Courses'
 import CourseDetails from './src/components/course/CourseDetails'
+import { ActionSheetProvider } from '@expo/react-native-action-sheet'
 
 
 const AppNavigator = createStackNavigator({
@@ -23,6 +24,8 @@ const AppContainer = createAppContainer(AppNavigator);
 export default App = () =>  {
     return (
       <Provider store={store}>
-        <AppContainer />
+        <ActionSheetProvider>
+          <AppContainer />
+        </ActionSheetProvider>
       </Provider>)
 }

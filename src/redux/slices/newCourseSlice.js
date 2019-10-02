@@ -35,8 +35,12 @@ const newCourseSlice = createSlice({
             }
         },
         setCurrentHole(state, action){
-            const { currentHole } = action.payload
-            state.currentHole  = currentHole
+            let { currentHole } = action.payload
+            
+            if(!Number.isInteger(currentHole)){
+                currentHole = parseInt(currentHole)
+            }
+            state.currentHole = currentHole
         }
     }
 })

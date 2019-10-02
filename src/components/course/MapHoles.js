@@ -22,6 +22,8 @@ export default function MapHoles(props) {
   const { courseLocation } = useSelector(state => state.newCourse.courseData)
   const { holes } = useSelector(state  => state.newCourse.courseData ) || {}
 
+  const [map, setMap] = useState()
+
   useEffect(()=>{
     getLocation().then(
         (data) => {
@@ -74,7 +76,6 @@ export default function MapHoles(props) {
   // const [greenMarkerVisable, setGreenMarkerVisable] = useState(false)
   // const [allVisable, setAllVisable] = useState(false)
   
-  const [map, setMap] = useState()
   // const [fabOpen, setFabOpen] = useState(false)
   
   const isMarkerVisable = (markerName) => {
@@ -106,14 +107,21 @@ export default function MapHoles(props) {
     }
   }
 
-  const fit = () => {
+  const goToHole = (teeMarker, fairwayMarker, greenMarker) => {
     var bearing = getBearing(teeMarker.latitude, teeMarker.longitude, greenMarker.latitude, greenMarker.longitude)
     setTimeout(()=>{
       map.fitToCoordinates([teeMarker, fairwayMarker, greenMarker],
          { edgePadding: { top: padding, right: padding, bottom: padding, left: padding }, animated: false })
-      map.setCamera({heading : bearing })   
+      map.setCamera({heading : bearing})   
     }, 200)
 
+  }
+
+  const onSetMapRef = (ref) => {
+    setMap(ref)
+    if(!props.navigation.getParam('goToHole')){
+      props.navigation.setParams({goToHole : goToHole})
+    }
   }
 
   const onDragPolygon = (point, coordinate) => {
@@ -128,7 +136,7 @@ export default function MapHoles(props) {
   return (
       <Container>
           <MapView
-            ref={(ref) => setMap(ref)}
+            ref={(ref) => onSetMapRef(ref)}
             style={{ flex: 1 }}
             provider={PROVIDER_GOOGLE}
             // onLayout={()=>{fit()}}
@@ -216,6 +224,6 @@ export default function MapHoles(props) {
 MapHoles.navigationOptions = ({ navigation }) => {
   return {
       headerTitle :  <Text>{'test'}</Text>,
-      headerRight: <HeaderButtons />
+      headerRight: <HeaderButtons goToHole={navigation.getParam('goToHole')}/>
   }
 }
